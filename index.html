@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CLIP Multimodal Retrieval & Zero-Shot Classification Web Application powered by OpenAI CLIP ViT-B/32." />
+  <title>CLIP Multimodal Retrieval &amp; Zero-Shot Classification</title>
+  
+  <!-- Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS & Chart.js -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Gradio Custom Theme -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="min-h-screen flex flex-col selection:bg-orange-600 selection:text-white">
+
+  <!-- Main Gradio Application Shell -->
+  <div class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 sm:px-6 space-y-5">
+
+    <!-- Gradio Top Markdown Header Block -->
+    <header class="gradio-block space-y-3">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
+            <span>⚡ Multimodal Image Retrieval &amp; Zero-Shot Classification</span>
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            Powered by OpenAI CLIP (<code class="text-orange-400 font-mono">openai/clip-vit-base-patch32</code>) in a shared 512-dimensional multimodal latent space.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-[11px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/30 mono">
+            ViT-B/32 · 512-D · 69 ImageNet Photos
+          </span>
+          <span class="text-[11px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Vector Engine Active
+          </span>
+        </div>
+      </div>
+
+      <!-- Gradio Tabs Bar -->
+      <nav class="gradio-tabs-nav mt-3 pt-1">
+        <button type="button" data-tab="text2img" class="nav-tab tab-active">
+          <span>🔍</span> 1. Text-to-Image Search
+        </button>
+        <button type="button" data-tab="img2img" class="nav-tab">
+          <span>🖼️</span> 2. Image-to-Image Search
+        </button>
+        <button type="button" data-tab="zeroshot" class="nav-tab">
+          <span>🎯</span> 3. Zero-Shot Classification
+        </button>
+      </nav>
+    </header>
+
+    <!-- ================================================================== -->
+    <!-- TAB 1: TEXT-TO-IMAGE SEARCH (GRADIO 2-COLUMN LAYOUT)               -->
+    <!-- ================================================================== -->
+    <section id="panel-text2img" class="tab-panel space-y-5">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <!-- Left Column: Inputs (Gradio Style) -->
+        <div class="lg:col-span-5 space-y-4">
+          
+          <!-- Textbox Block -->
+          <div class="gradio-block space-y-2">
+            <div class="gradio-label">
+              <span>Enter Text Prompt</span>
+              <span class="text-[10px] text-slate-500 font-normal">Natural Language</span>
+            </div>
+            <div class="relative">
+              <textarea
+                id="t2iQueryInput"
+                rows="3"
+                class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 transition resize-none shadow-inner"
+                placeholder="Type any natural language prompt..."
+              >A golden retriever dog running on green grass in a park</textarea>
+            </div>
+
+            <!-- Top-K Selector Dropdown -->
+            <div class="flex items-center justify-between pt-1">
+              <label for="t2iTopKSelect" class="text-xs font-semibold text-slate-400">Top-K Matching Images:</label>
+              <select id="t2iTopKSelect" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-orange-500">
+                <option value="3">Top 3 Results</option>
+                <option value="5" selected>Top 5 Results</option>
+                <option value="8">Top 8 Results</option>
+                <option value="12">All 12 Results</option>
+              </select>
+            </div>
+
+            <!-- Gradio Action Buttons -->
+            <div class="flex items-center gap-2.5 pt-2">
+              <button id="t2iSearchBtn" type="button" class="btn-gradio-primary flex-1">
+                <span>Search Matching Images</span>
+              </button>
+              <button id="t2iClearBtn" type="button" class="btn-gradio-secondary">
+                <span>Clear</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Examples Block (Gradio Style) -->
+          <div class="gradio-block space-y-2">
+            <div class="gradio-label">
+              <span>Examples (Click to Run)</span>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" data-prompt="A golden retriever dog running on green grass in a park" class="preset-prompt-btn">
+                🐕 Dog in a park
+              </button>
+              <button type="button" data-prompt="A great white shark swimming in deep ocean water" class="preset-prompt-btn">
+                🦈 Shark in ocean
+              </button>
+              <button type="button" data-prompt="A giant panda eating bamboo in a wild forest" class="preset-prompt-btn">
+                🐼 Giant panda
+              </button>
+              <button type="button" data-prompt="A hot baked cheesy pizza with fresh toppings" class="preset-prompt-btn">
+                🍕 Baked pizza
+              </button>
+              <button type="button" data-prompt="A passenger airplane flying high through white clouds in a blue sky" class="preset-prompt-btn">
+                ✈️ Airplane in clouds
+              </button>
+              <button type="button" data-prompt="A red sports car driving on a city street at dusk" class="preset-prompt-btn">
+                🏎️ Red sports car
+              </button>
+              <button type="button" data-prompt="An African lion predator sitting outdoors" class="preset-prompt-btn">
+                🦁 African lion
+              </button>
+              <button type="button" data-prompt="A colorful bird perched on a mossy tree branch in nature" class="preset-prompt-btn">
+                🐦 Bird on branch
+              </button>
+              <button type="button" data-prompt="Snow covered mountain peak reflecting in an alpine lake" class="preset-prompt-btn">
+                🏔️ Snowy mountain
+              </button>
+              <button type="button" data-prompt="A steaming cup of vintage espresso coffee on a table" class="preset-prompt-btn">
+                ☕ Espresso coffee
+              </button>
+              <button type="button" data-prompt="A cruise ship sailing on open ocean water" class="preset-prompt-btn">
+                🚢 Ocean ship
+              </button>
+              <button type="button" data-prompt="A soccer ball on a stadium match pitch" class="preset-prompt-btn">
+                ⚽ Soccer pitch
+              </button>
+            </div>
+          </div>
+
+          <!-- 512-D Vector Preview -->
+          <div class="gradio-block space-y-1.5">
+            <div class="gradio-label">
+              <span>512-D Text Embedding Preview</span>
+              <span id="t2iBestMatchBadge" class="text-[10px] text-emerald-400 font-semibold normal-case">Top Sim: 0.342</span>
+            </div>
+            <div id="t2iVectorPreview" class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 mono text-[11px] text-slate-400 break-all shadow-inner leading-relaxed">
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Gallery Output (Gradio Style) -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="gradio-block space-y-3">
+            <div class="gradio-label">
+              <span>Top Matching Images (with Cosine Similarity)</span>
+              <span class="text-[10px] text-slate-500 font-normal">Gradio Gallery</span>
+            </div>
+
+            <!-- Gallery Grid -->
+            <div id="t2iResultsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+          </div>
+
+          <!-- Similarity Plot -->
+          <div class="gradio-block space-y-2">
+            <div class="gradio-label">
+              <span>Cosine Similarity Distribution</span>
+              <span class="text-[10px] text-slate-500 font-normal">Metric: (A · B) / (||A|| × ||B||)</span>
+            </div>
+            <div class="relative h-48">
+              <canvas id="t2iBarChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- TAB 2: IMAGE-TO-IMAGE SEARCH (GRADIO 2-COLUMN LAYOUT)              -->
+    <!-- ================================================================== -->
+    <section id="panel-img2img" class="tab-panel hidden space-y-5">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <!-- Left Column: Image Input (Gradio gr.Image) -->
+        <div class="lg:col-span-5 space-y-4">
+          
+          <div class="gradio-block space-y-3">
+            <div class="gradio-label">
+              <span>Upload or Select Query Image</span>
+              <span id="i2iQueryIdBadge" class="text-[10px] mono text-slate-400 font-normal">ID: img_01</span>
+            </div>
+
+            <!-- Drag & Drop Zone -->
+            <div id="i2iDropZone" class="gradio-dropzone group">
+              <div class="space-y-2">
+                <div class="w-10 h-10 mx-auto rounded-full bg-slate-800 flex items-center justify-center text-xl text-orange-400 group-hover:scale-110 transition">
+                  📤
+                </div>
+                <div class="text-xs text-slate-300">
+                  <span class="font-semibold text-orange-400">Click to upload</span> or drag and drop
+                </div>
+                <p class="text-[11px] text-slate-500">Supports PNG, JPG, WEBP</p>
+              </div>
+              <input id="i2iUploadInput" type="file" accept="image/*" class="hidden" />
+            </div>
+
+            <!-- Active Query Preview Card -->
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Current Query Image</div>
+              <div class="aspect-[4/3] rounded-lg overflow-hidden bg-slate-950 border border-slate-800 shadow">
+                <img id="i2iQueryImagePreview" src="" alt="Query Preview" class="w-full h-full object-cover" />
+              </div>
+              <div>
+                <div id="i2iQueryTitle" class="text-xs font-bold text-white">Golden Retriever in Park</div>
+                <p id="i2iQueryCaption" class="text-[11px] text-slate-400 leading-relaxed mt-0.5"></p>
+              </div>
+            </div>
+
+            <!-- Quick Preset Thumbnail Selector (Gradio Examples) -->
+            <div class="space-y-1.5 pt-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-400">Dataset Gallery (Click to Select Query):</span>
+                <span class="text-[10px] text-orange-400 font-semibold mono">69 photos</span>
+              </div>
+              <div id="i2iSelectorStrip" class="grid grid-cols-6 sm:grid-cols-8 gap-1.5 max-h-56 overflow-y-auto pr-1 rounded-lg border border-slate-800/80 p-1.5 bg-slate-950/60 custom-scrollbar"></div>
+            </div>
+
+            <!-- Options & Action Button -->
+            <div class="space-y-2.5 pt-2 border-t border-slate-800">
+              <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                <input id="i2iExcludeSelfToggle" type="checkbox" checked class="rounded text-orange-500 focus:ring-0" />
+                <span>Exclude Query Image from Results</span>
+              </label>
+
+              <button id="i2iSearchBtn" type="button" class="btn-gradio-primary w-full">
+                <span>Find Most Similar Images</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Visual Similarity Gallery Output -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="gradio-block space-y-3">
+            <div class="gradio-label">
+              <span>Top Visually Similar Images</span>
+              <span class="text-[10px] text-slate-500 font-normal">Ranked by Cosine Proximity</span>
+            </div>
+
+            <!-- Gallery Grid -->
+            <div id="i2iResultsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- TAB 3: ZERO-SHOT CLASSIFICATION (GRADIO 2-COLUMN LAYOUT)           -->
+    <!-- ================================================================== -->
+    <section id="panel-zeroshot" class="tab-panel hidden space-y-5">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <!-- Left Column: Inputs -->
+        <div class="lg:col-span-5 space-y-4">
+          
+          <!-- Image to Classify Block -->
+          <div class="gradio-block space-y-3">
+            <div class="gradio-label">
+              <span>Upload Image to Classify</span>
+              <span id="zsTrueCategoryBadge" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-normal">Class: dog</span>
+            </div>
+
+            <!-- Drag & Drop Zone -->
+            <div id="zsDropZone" class="gradio-dropzone group">
+              <div class="space-y-2">
+                <div class="w-10 h-10 mx-auto rounded-full bg-slate-800 flex items-center justify-center text-xl text-orange-400 group-hover:scale-110 transition">
+                  🎯
+                </div>
+                <div class="text-xs text-slate-300">
+                  <span class="font-semibold text-orange-400">Click to upload</span> or drag and drop
+                </div>
+                <p class="text-[11px] text-slate-500">Classify custom photos</p>
+              </div>
+              <input id="zsUploadInput" type="file" accept="image/*" class="hidden" />
+            </div>
+
+            <!-- Target Image Preview -->
+            <div class="aspect-[4/3] rounded-lg overflow-hidden bg-slate-950 border border-slate-800 shadow">
+              <img id="zsTargetImage" src="" alt="Target Image" class="w-full h-full object-cover" />
+            </div>
+
+            <!-- Preset Thumbnails (Examples) -->
+            <div class="space-y-1.5 pt-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-400">Dataset Gallery (Click to Classify):</span>
+                <span class="text-[10px] text-orange-400 font-semibold mono">69 photos</span>
+              </div>
+              <div id="zsSelectorStrip" class="grid grid-cols-6 sm:grid-cols-8 gap-1.5 max-h-56 overflow-y-auto pr-1 rounded-lg border border-slate-800/80 p-1.5 bg-slate-950/60 custom-scrollbar"></div>
+            </div>
+
+            <!-- Candidate Labels Input (gr.Textbox) -->
+            <div class="space-y-1.5 pt-2 border-t border-slate-800">
+              <label for="zsLabelsInput" class="text-xs font-semibold text-slate-400">
+                Candidate Labels (comma-separated):
+              </label>
+              <input
+                id="zsLabelsInput"
+                type="text"
+                value="dog, cat, shark, bird, panda, lion, car, airplane, pizza, sports, mountain"
+                class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-orange-500 shadow-inner"
+              />
+            </div>
+
+            <!-- Prompt Template (gr.Dropdown) -->
+            <div class="space-y-1.5">
+              <label for="zsTemplateSelect" class="text-xs font-semibold text-slate-400">
+                Prompt Template:
+              </label>
+              <select id="zsTemplateSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-orange-500">
+                <option value="A photo of a {}.">A photo of a {label}.</option>
+                <option value="A close-up photo of a {}.">A close-up photo of a {label}.</option>
+                <option value="An outdoor photo of a {}.">An outdoor photo of a {label}.</option>
+                <option value="{}">{label} (Raw label name)</option>
+              </select>
+            </div>
+
+            <!-- Action Button -->
+            <button id="zsClassifyBtn" type="button" class="btn-gradio-primary w-full mt-2">
+              <span>Run Zero-Shot Classification</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Gradio Label & Predictions Output -->
+        <div class="lg:col-span-7 space-y-4">
+          
+          <!-- Gradio Label Component Output (gr.Label) -->
+          <div class="gradio-block space-y-3">
+            <div class="gradio-label">
+              <span>Predicted Labels &amp; Similarity Scores</span>
+              <span class="text-[10px] text-slate-500 font-normal">gr.Label Component</span>
+            </div>
+
+            <!-- Top Prediction Hero Card -->
+            <div class="p-4 rounded-xl bg-gradient-to-r from-orange-950/60 to-slate-900 border border-orange-500/40 flex items-center justify-between">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-orange-400">Top Predicted Class</span>
+                <div id="zsTopPredictedLabel" class="text-2xl font-extrabold text-white capitalize mt-0.5">dog</div>
+                <p id="zsTopPromptUsed" class="text-xs text-slate-400 mono mt-1">Prompt: "A photo of a dog."</p>
+              </div>
+              <div class="text-right">
+                <span id="zsTopPredictedScore" class="text-xl font-bold mono text-emerald-400">68.4%</span>
+                <p class="text-[10px] text-slate-400">Confidence</p>
+              </div>
+            </div>
+
+            <!-- Gradio Horizontal Percentage Bars -->
+            <div id="zsLabelBarsContainer" class="space-y-3 pt-2"></div>
+          </div>
+
+          <!-- Candidate Probability Chart & Table -->
+          <div class="gradio-block space-y-3">
+            <div class="gradio-label">
+              <span>Confidence Distribution (Chart &amp; Table)</span>
+            </div>
+            <div class="relative h-44">
+              <canvas id="zsBarChart"></canvas>
+            </div>
+            <div class="overflow-x-auto custom-scrollbar pt-2">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="border-b border-slate-800 text-slate-500 uppercase tracking-wider text-[10px]">
+                    <th class="py-2 px-2.5">Rank</th>
+                    <th class="py-2 px-2.5">Label</th>
+                    <th class="py-2 px-2.5">CLIP Prompt</th>
+                    <th class="py-2 px-2.5 text-right">Cosine Sim</th>
+                    <th class="py-2 px-2.5 text-right">Softmax Prob</th>
+                  </tr>
+                </thead>
+                <tbody id="zsTableBody" class="divide-y divide-slate-800/60 mono text-xs"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Toast Notification Banner -->
+  <div id="toastBanner" class="hidden fixed bottom-5 right-5 z-50 max-w-sm px-4 py-3 rounded-xl bg-slate-900/95 text-white text-xs sm:text-sm font-medium shadow-2xl border border-orange-500/60 backdrop-blur-lg flex items-center gap-3">
+    <span id="toastIcon" class="text-base text-orange-400">✓</span>
+    <span id="toastMessage" class="flex-1">Action completed successfully!</span>
+  </div>
+
+  <!-- Gradio Footer -->
+  <footer class="border-t border-slate-800/80 py-4 px-6 text-center text-xs text-slate-500 mt-auto">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <span class="flex items-center gap-1.5">
+        <span>Built with</span>
+        <strong class="text-slate-300">Gradio UI</strong>
+        <span>&amp;</span>
+        <strong class="text-slate-300">OpenAI CLIP (ViT-B/32)</strong>
+      </span>
+      <span class="mono text-slate-400">Cosine Similarity = (A &middot; B) / (||A|| &times; ||B||)</span>
+    </div>
+  </footer>
+
+  <!-- Application Logic Modules -->
+  <script src="js/data.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/features.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

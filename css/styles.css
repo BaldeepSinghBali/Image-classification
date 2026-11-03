@@ -1,0 +1,275 @@
+/* =========================================================================
+   styles.css - Gradio Theme for CLIP Multimodal Web Application
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Gradio Dark Palette */
+  --gradio-bg: #0b0f19;
+  --gradio-surface: #111827;
+  --gradio-card: #161f30;
+  --gradio-border: #2d3748;
+  --gradio-border-focus: #ff7c00;
+
+  /* Iconic Gradio Orange Primary Accent */
+  --gradio-orange: #ff7c00;
+  --gradio-orange-hover: #ea580c;
+  --gradio-orange-glow: rgba(255, 124, 0, 0.25);
+
+  --text-main: #f9fafb;
+  --text-muted: #9ca3af;
+  --text-faint: #6b7280;
+
+  --accent-emerald: #10b981;
+  --accent-blue: #3b82f6;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--gradio-bg);
+  background-image: 
+    radial-gradient(ellipse at 50% 0%, rgba(255, 124, 0, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(59, 130, 246, 0.04) 0%, transparent 50%);
+  background-attachment: fixed;
+  color: var(--text-main);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* Gradio Component Block (gr.Block) */
+.gradio-block {
+  background: var(--gradio-surface);
+  border: 1px solid var(--gradio-border);
+  border-radius: 0.875rem;
+  padding: 1.25rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gradio-block:focus-within {
+  border-color: rgba(255, 124, 0, 0.6);
+  box-shadow: 0 0 0 1px rgba(255, 124, 0, 0.25);
+}
+
+.gradio-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.65rem;
+}
+
+/* Gradio Tabs Navigation */
+.gradio-tabs-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 2px solid #1f2937;
+  padding-bottom: 0;
+}
+
+.nav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.nav-tab:hover {
+  color: var(--text-main);
+  border-bottom-color: rgba(255, 124, 0, 0.4);
+}
+
+.nav-tab.tab-active {
+  color: #ffffff;
+  border-bottom-color: var(--gradio-orange);
+  font-weight: 700;
+}
+
+/* Tab Panels */
+.tab-panel {
+  display: block;
+  animation: gradioFadeIn 0.25s ease-out;
+}
+
+.tab-panel.hidden {
+  display: none !important;
+}
+
+@keyframes gradioFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Gradio Buttons */
+.btn-gradio-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #ff7c00 0%, #f97316 100%);
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 0.65rem 1.5rem;
+  border-radius: 0.625rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(255, 124, 0, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-gradio-primary:hover {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  box-shadow: 0 6px 20px rgba(255, 124, 0, 0.5);
+  transform: translateY(-1px);
+}
+
+.btn-gradio-primary:active {
+  transform: translateY(0);
+}
+
+.btn-gradio-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #1f2937;
+  color: #d1d5db;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.65rem 1.25rem;
+  border-radius: 0.625rem;
+  border: 1px solid #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-gradio-secondary:hover {
+  background: #374151;
+  color: #ffffff;
+}
+
+/* Gradio Drag & Drop Upload Zone (gr.Image) */
+.gradio-dropzone {
+  border: 2px dashed #374151;
+  border-radius: 0.75rem;
+  background: rgba(17, 24, 39, 0.6);
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gradio-dropzone:hover {
+  border-color: var(--gradio-orange);
+  background: rgba(255, 124, 0, 0.05);
+}
+
+/* Gradio Gallery Result Card */
+.gradio-gallery-item {
+  position: relative;
+  background: #161f30;
+  border: 1px solid #2d3748;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.gradio-gallery-item:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 124, 0, 0.6);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 124, 0, 0.15);
+}
+
+.gradio-gallery-item.top-rank {
+  border-color: var(--gradio-orange);
+  box-shadow: 0 0 20px rgba(255, 124, 0, 0.25);
+}
+
+/* Preset Prompt Chips (Gradio Examples) */
+.preset-prompt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  background: #1f2937;
+  border: 1px solid #374151;
+  color: #d1d5db;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.preset-prompt-btn:hover {
+  background: rgba(255, 124, 0, 0.15);
+  border-color: var(--gradio-orange);
+  color: #ffffff;
+}
+
+/* Custom Scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #0b0f19;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+/* Floating Toast Banner */
+#toastBanner {
+  animation: slideToast 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideToast {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
