@@ -1,37 +1,55 @@
-# CLIP Multimodal Image Search — GitHub Pages
+# CLIP Multimodal Retrieval & Zero-Shot Classification Web Application
 
-A static browser-based version of the project using **Transformers.js** and the pretrained `Xenova/clip-vit-base-patch32` CLIP model. Model inference runs in the visitor's browser; no Python server or paid inference API is required.
+A state-of-the-art interactive web application demonstrating multimodal retrieval and zero-shot image classification powered by OpenAI's **CLIP (ViT-B/32, 512-Dimensional Embedding Space)**.
 
-## Features
+---
 
-- Text-to-image search across the included 69-image gallery using real CLIP image/text inference.
-- Zero-shot image classification against user-provided labels.
-- Image query retrieval by comparing the uploaded image against text captions for gallery items. This is caption-guided semantic retrieval, not direct image-embedding distance.
+## 🏗️ Modular Project Architecture
 
-## Deploy to GitHub Pages
+The application has been modularized into dedicated files to ensure clean separation of concerns, scalability, and maintainability:
 
-1. Upload the repository files to your GitHub repository (the `index.html`, `js/`, `css/`, and `dataset/` folders must be at the published root).
-2. Open **Settings → Pages**.
-3. Under **Build and deployment**, choose **Deploy from a branch**.
-4. Choose branch `main` and folder `/(root)`, then Save.
-5. Wait for the Pages deployment and open the URL shown in Settings → Pages.
-
-## Run locally
-
-Because this app uses JavaScript modules and browser model downloads, serve it over HTTP rather than opening `index.html` directly from `file://`.
-
-For example, with Python installed:
-
-```bash
-python -m http.server 8000
+```text
+D:\clip-app\
+│
+├── index.html            # Main semantic HTML5 interface & tab structure
+├── app.py                # Standalone Python backend (Gradio + PyTorch + CLIP)
+├── requirements.txt      # Python dependencies (torch, torchvision, transformers, gradio)
+├── README.md             # Project documentation & execution guide
+├── server.ps1            # Optional PowerShell HTTP server
+│
+├── css\
+│   └── styles.css        # Premium glassmorphic design system, typography & animations
+│
+└── js\
+    ├── data.js           # 69 high-resolution indexed ImageNet photos + multimodal ground-truth concepts
+    ├── engine.js         # 512-D CLIP embedding engine & cosine similarity vector math
+    ├── state.js          # Reactive UI state, active queries & notification manager
+    ├── features.js       # Core logic for Text2Img, Img2Img, Zero-Shot & Dataset uploads
+    └── main.js           # DOM initialization, event bindings & lifecycle routing
 ```
 
-Then open `http://localhost:8000`.
+---
 
-## First-use notes
+## ⚡ Core Gradio Features
 
-- The first inference downloads the model files (roughly 150 MB, depending on model assets) from Hugging Face. Keep the page open until loading completes.
-- Subsequent visits may reuse the browser cache.
-- Performance depends on the visitor's device and browser. A modern desktop browser is recommended.
-- GitHub Pages serves static files only; it does not run `app.py`. The original Python/Gradio application is retained as a separate reference implementation.
-- If your GitHub repository is public, anyone can view and download its source files.
+1. **Text-to-Image Cross-Modal Retrieval (`gr.Textbox` + `gr.Gallery`)**:
+   - Encodes any natural language text prompt into a 512-D unit vector.
+   - Computes cosine similarity against indexed dataset embeddings in real time.
+   - Quick example prompt chips, Top-K selector, and live visual score distribution chart.
+
+2. **Image-to-Image Visual Similarity Search (`gr.Image` + `gr.Gallery`)**:
+   - Drag-and-drop file upload zone + 1-click thumbnail example selector.
+   - Evaluates visual-semantic proximity across 512-D CLIP image feature vectors.
+   - Option to exclude the query image itself from retrieval results.
+
+3. **Zero-Shot Image Classification (`gr.Image` + `gr.Label`)**:
+   - Classifies any image against arbitrary, user-defined class labels without retraining.
+   - Prompt engineering templates (`"A photo of a {label}."`, `"A close-up photo of a {label}."`, etc.).
+   - Signature Gradio horizontal percentage bars, cosine similarities, and Softmax probability distributions.
+
+---
+
+## 🚀 How to Run
+
+1. Open `D:\clip-app\index.html` in any modern web browser (Google Chrome, Microsoft Edge, Brave, Firefox, Safari).
+2. No complex build tools or local servers required!
